@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: racecourse-deployment
+  labels:
+    app: racecourse
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: racecourse
+  template:
+    metadata:
+      labels:
+        app: racecourse
+    spec:
+      containers:
+      - name: racecourse
+        image: registry.hub.docker.com/calbrit1/kaleidoproject:racecourse
