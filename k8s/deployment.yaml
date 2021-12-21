@@ -20,7 +20,7 @@ spec:
         command: ['sh', '-c', "mv qdatatmp/qdata_0/* qdata/"]
         volumeMounts:
           - mountPath: /qdata
-            name: pv
+            name: node-pv
       containers:
       - name: bootnode
         args: 
@@ -30,8 +30,8 @@ spec:
         image: registry.hub.docker.com/calbrit1/kaleidoproject:jpmorganchase-quorum3
         volumeMounts:
           - mountPath: /qdata
-            name: pv
+            name: node-pv
       volumes:
-        - name: pv
+        - name: node-pv
           persistentVolumeClaim:
             claimName: bootnode-claim

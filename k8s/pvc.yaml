@@ -3,7 +3,6 @@ kind: PersistentVolumeClaim
 metadata:
   name: bootnode-claim
 spec:
-  storageClassName: manual
   accessModes:
     - ReadWriteOnce
   resources:
