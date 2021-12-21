@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: quorum-nodes
+  labels:
+    app: kaleido-app
+spec:
+  ports:
+  - port: 80
+    name: web
+  clusterIP: None
+  selector:
+    app: kaleido-app
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: node
+spec:
+  serviceName: "quorum-nodes"
+  replicas: 5
+  selector:
+    matchLabels:
+      app: kaleido-app
+  template:
+    metadata:
+      labels:
+        app: kaleido-app
+    spec:
+      initContainers:
+      - name: init-datanode 
+        image: registry.hub.docker.com/calbrit1/kaleidoproject:jpmorganchase-quorum3
+        command: ['sh', '-c', 'FOLDER_NUM=$(echo ${HOSTNAME##0} | cut -c6-6);FOLDER_NUM=$(expr $FOLDER_NUM + 1);FOLDER="mv qdatatmp/qdata_${FOLDER_NUM}/* qdata/"; eval $FOLDER;']
+        volumeMounts:
+          - mountPath: /qdata
+            name: node-pv
+      volumes:
+        - name: node-pv
+      containers:
+      - name: nodes 
+        args:
+          - start.sh
+          - --bootnode=enode://a6a7134368ecd7ecefc911efd27f571c44ac32c7c800b604691f4610caf5c33b55bd8937d7b75d989ac26ee0ff9ea57406da2b1ed30ec90b649cf111c2c6a4b8@bootnode-service:30301
+          - --raftInit
+          - --networkid
+          - "2018"
+        image: registry.hub.docker.com/calbrit1/kaleidoproject:jpmorganchase-quorum3
+        ports:
+        - containerPort: 8545
+          name: web
+        - containerPort: 8546 
+          name: web2
+        volumeMounts:
+        - name: node-pv
+          mountPath: /qdata
+  volumeClaimTemplates:
+  - metadata:
+      name: node-claim
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
