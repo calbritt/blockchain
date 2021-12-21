@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bootnode-deployment
+  labels:
+    app: kaleido
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kaleido
+  template:
+    metadata:
+      labels:
+        app: kaleido
+    spec:
+      initContainers:
+      - name: init-data
+        image: registry.hub.docker.com/calbrit1/kaleidoproject:jpmorganchase-quorum3
+        command: ['sh', '-c', "mv qdatatmp/qdata_0/* qdata/"]
+        volumeMounts:
+          - mountPath: /qdata
+            name: pv
+      containers:
+      - name: bootnode
+        args: 
+        - bootnode
+        - -nodekey
+        - /qdata/nodekey
+        image: registry.hub.docker.com/calbrit1/kaleidoproject:jpmorganchase-quorum3
+        volumeMounts:
+          - mountPath: /qdata
+            name: pv
+      volumes:
+        - name: pv
+          persistentVolumeClaim:
+            claimName: bootnode-claim
